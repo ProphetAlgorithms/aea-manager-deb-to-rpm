@@ -27,7 +27,7 @@ fi
 ## files but does not build the package. This is necessary because inside the spec 
 ## file the "Summary:" tag does not contain a value and makes it impossible to create 
 ## the rpm package:
-echo "*Running command: ${ALIEN_CMD} $1"
+echo "* Running command: ${ALIEN_CMD} $1"
 ALIEN_OUT=($($ALIEN_CMD $1))
 if [[ ${ALIEN_OUT} != "" ]] && [[ "${ALIEN_OUT[2]}" == "prepared." ]] && [ ${#ALIEN_OUT[@]} -eq 3 ]; then
    echo "${ALIEN_OUT[@]}"
@@ -56,23 +56,23 @@ bash -c "${SED_RPMDIR_CMD}"
 ## Starting rpmbuild to build the rpm package:
 CURR_DIR=`pwd`
 RPMBUILD_CMD="sudo rpmbuild --buildroot='${CURR_DIR}/${ALIEN_DIR}' -ba ${ALIEN_SPEC}"
-echo "*Running command: ${RPMBUILD_CMD}"
+echo "* Running command: ${RPMBUILD_CMD}"
 bash -c "${RPMBUILD_CMD}"
 
 ## Delete a file generated during package building:
-echo "*Delete file: /root/rpmbuild/SRPMS/${ALIEN_DIR}-1.src.rpm"
+echo "* Delete file: /root/rpmbuild/SRPMS/${ALIEN_DIR}-1.src.rpm"
 sudo rm -rf /root/rpmbuild/SRPMS/${ALIEN_DIR}-1.src.rpm
 
 ## Rename and change the owner of the rpm package:
 SUDO_USER=$(sudo printenv SUDO_USER)
-echo "*Remove \"-1\" from the rpm package version"
+echo "* Remove \"-1\" from the rpm package version"
 sudo mv ${CURR_DIR}/${ALIEN_DIR}-1.${ARCH}.rpm ${CURR_DIR}/${ALIEN_DIR}.${ARCH}.rpm
-echo "*Change package owner (${SUDO_USER}): ${CURR_DIR}/${ALIEN_DIR}.${ARCH}.rpm"
+echo "* Change package owner (${SUDO_USER}): ${CURR_DIR}/${ALIEN_DIR}.${ARCH}.rpm"
 sudo chown ${SUDO_USER}:${SUDO_USER} ${CURR_DIR}/${ALIEN_DIR}.${ARCH}.rpm
 
 ## Python version warning, distributions like fedora have too recent versions of the software
 ## making aea-manager unusable:
-echo "*The first version of aea-manager needs python 3.8 (Fedora 34: dnf install python3.8)"
+echo "* The first version of aea-manager needs python 3.8 (Fedora 34: dnf install python3.8)"
 
 ## Other notices:
 echo "** Script tested on fedora 34 **"
