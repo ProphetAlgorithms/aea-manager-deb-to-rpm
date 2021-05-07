@@ -66,9 +66,9 @@ sudo rm -rf /root/rpmbuild/SRPMS/${ALIEN_DIR}-1.src.rpm
 ## Rename and change the owner of the rpm package:
 SUDO_USER=$(sudo printenv SUDO_USER)
 echo "* Remove \"-1\" from the rpm package version"
-sudo mv ${CURR_DIR}/${ALIEN_DIR}-1.${ARCH}.rpm ${CURR_DIR}/${ALIEN_DIR}.${ARCH}.rpm
-echo "* Change package owner (${SUDO_USER}): ${CURR_DIR}/${ALIEN_DIR}.${ARCH}.rpm"
-sudo chown ${SUDO_USER}:${SUDO_USER} ${CURR_DIR}/${ALIEN_DIR}.${ARCH}.rpm
+sudo mv ${CURR_DIR}/${ALIEN_DIR}-1.${ARCH}.rpm ${CURR_DIR}/${ALIEN_DIR}_${ARCH}.rpm
+echo "* Change package owner (${SUDO_USER}): ${CURR_DIR}/${ALIEN_DIR}_${ARCH}.rpm"
+sudo chown ${SUDO_USER}:${SUDO_USER} ${CURR_DIR}/${ALIEN_DIR}_${ARCH}.rpm
 
 ## Python version warning, distributions like fedora have too recent versions of the software
 ## making aea-manager unusable:
