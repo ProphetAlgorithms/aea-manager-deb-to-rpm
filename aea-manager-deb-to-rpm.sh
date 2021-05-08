@@ -3,14 +3,16 @@
 ARCH=$(uname -m)
 RELEASE="1"
 ALIEN_BIN="alien"
+SED_BIN="sed"
+URL="https://aea-manager.fetch.ai"
 ALIEN_CMD="sudo $ALIEN_BIN -r -g -c -k"
 SUMMARY_TAG="Summary:"
+MOD_SUMMARY_TAG="Summary: Autonomous Economic Agents (AEA) Manager to easily build your agents."
 RPMDIR_TAG="%define _rpmdir ..\/"
 MOD_RPMDIR_TAG="%define _rpmdir .\/"
 #RPM_FILENAME_TAG="%define _rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
 #MOD_RPM_FILENAME_TAG="%define _rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
-DESCRIPTION_TAG=" <project description>"
-MOD_DESCRIPTION_TAG="Autonomous Economic Agents (AEA) Manager to easily build your agents."
+DESCRIPTION="Software created to simplify the creation of agents (AEA) for those who are not\nfamiliar with programming but also gives the possibility to edit the code for those\nwho are experts, adding the environment for execution and management.\n"
 DESKTOP_FILE_TAG="Icon=aea_manager"
 MOD_DESKTOP_FILE_TAG="Icon=\/usr\/share\/icons\/hicolor\/0x0\/apps\/aea_manager.png"
 declare -a dir_tags=("%dir\s\\\"\/\\\"" "%dir\\s\\\"\/usr\/\\\"" "%dir\\s\\\"\/usr\/share\/\\\"" "%dir\\s\\\"\/usr\/share\/applications\/\\\"" "%dir\\s\\\"\/usr\/share\/icons\/\\\"" "%dir\\s\\\"\/usr\/share\/icons\/hicolor\/\\\"" "%dir\\s\\\"\/usr\/share\/icons\/hicolor\/0x0\/\\\"" "%dir\\s\\\"\/usr\/share\/icons\/hicolor\/0x0\/apps\/\\\"" "%dir\\s\\\"\/usr\/share\/doc\/\\\"" "%dir\\s\"\/opt\/\\\"")
@@ -25,6 +27,13 @@ fi
 if ! command -v $ALIEN_BIN &> /dev/null; then 
    echo -e "\nCommand \"${ALIEN_BIN}\" could not be found."
    echo -e "You need to install the \"${ALIEN_BIN}\" package before continuing.\n"
+   exit 1
+fi
+
+## If sed is not installed the execution ends:
+if ! command -v $SED_BIN &> /dev/null; then 
+   echo -e "\nCommand \"${SED_BIN}\" could not be found."
+   echo -e "You need to install the \"${SED_BIN}\" package before continuing.\n"
    exit 1
 fi
 
@@ -50,30 +59,38 @@ ALIEN_SPEC="${ALIEN_DIR}/${ALIEN_DIR}-${RELEASE}.spec"
 #SUMMARY_LINE=${SUMMARY_GREP_OUT%%:*}
 
 ## Using sed to replace the line containing "Summary:":
-SED_SUMMARY_CMD="sudo sed -i 's/${SUMMARY_TAG}/${SUMMARY_TAG} aea-manager/' ${ALIEN_SPEC}"
+SED_SUMMARY_CMD="sudo sed -i 's/^${SUMMARY_TAG}/${MOD_SUMMARY_TAG}/' ${ALIEN_SPEC}"
 bash -c "${SED_SUMMARY_CMD}"
+
+## Add URL tag
+bash -c "sudo sed -i '/^${SUMMARY_TAG}.*/a URL: ${URL}' ${ALIEN_SPEC}"
 
 ## Using sed to replace the line containing "%define _rpmdir ../", to create the rpm package
 ## in the same folder where the script is located:
-SED_RPMDIR_CMD="sudo sed -i 's/${RPMDIR_TAG}/${MOD_RPMDIR_TAG}/' ${ALIEN_SPEC}"
+SED_RPMDIR_CMD="sudo sed -i 's/^${RPMDIR_TAG}/${MOD_RPMDIR_TAG}/' ${ALIEN_SPEC}"
 bash -c "${SED_RPMDIR_CMD}"
 
 ## Using sed to replace the line containing "%define _rpmfilename %%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm"
-#SED_FILENAME_CMD="sudo sed -i 's/${RPM_FILENAME_TAG}/${MOD_RPM_FILENAME_TAG}/' ${ALIEN_SPEC}"
+#SED_FILENAME_CMD="sudo sed -i 's/^${RPM_FILENAME_TAG}/${MOD_RPM_FILENAME_TAG}/' ${ALIEN_SPEC}"
 #bash -c "${SED_FILENAME_CMD}"
 
+## Add description
+sudo sed -i -e '/^%description$/,/^%.*/{//!d}' ${ALIEN_SPEC}
+bash -c "sudo sed -i -e '/^%description$/a ${DESCRIPTION}' ${ALIEN_SPEC}"
+
+
 ## Using sed to replace the line containing " <project description>"
-SED_DESCRIPTION_CMD="sudo sed -i 's/${DESCRIPTION_TAG}/${MOD_DESCRIPTION_TAG}/' ${ALIEN_SPEC}"
+SED_DESCRIPTION_CMD="sudo sed -i 's/^${DESCRIPTION_TAG}/${MOD_DESCRIPTION_TAG}/' ${ALIEN_SPEC}"
 bash -c "${SED_DESCRIPTION_CMD}"
 
 ## Using sed to fix the path for application icon
 DESKTOP_FILE=${ALIEN_DIR}"/usr/share/applications/aea_manager.desktop"
-SED_DESKTOP_FILE_CMD="sudo sed -i 's/${DESKTOP_FILE_TAG}/${MOD_DESKTOP_FILE_TAG}/' ${DESKTOP_FILE}"
+SED_DESKTOP_FILE_CMD="sudo sed -i 's/^${DESKTOP_FILE_TAG}/${MOD_DESKTOP_FILE_TAG}/' ${DESKTOP_FILE}"
 bash -c "${SED_DESKTOP_FILE_CMD}"
 
 ## Remove unnecessary dirs
 for dir in ${dir_tags[@]}; do
-  bash -c "sudo sed -i '/${dir}/d' ${ALIEN_SPEC}"
+  bash -c "sudo sed -i '/^${dir}/d' ${ALIEN_SPEC}"
 done
 
 ## Starting rpmbuild to build the rpm package:
